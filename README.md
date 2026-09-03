@@ -1,157 +1,337 @@
-Power-Line Noise Detection, Analysis, and Location
+# Power-Line Noise Detection, Analysis, and Location
 
-ECEN 403 Capstone project focused on developing and validating a portable method for detecting and helping locate electrical arcing and sparking on power-line equipment.
+## ECEN 403 Capstone Project
 
-Project Goal
+**Texas A&M University**
 
-Electrical arcing and sparking on power-system hardware can generate short-duration broadband RF noise. The goal of this project is to develop a system that can:
+This project focuses on developing and validating a portable system for detecting, analyzing, and helping locate electrical arcing and sparking on power-line equipment.
 
-detect signatures associated with power-line arcing and sparking,
+---
 
-distinguish those events from background RF noise,
+## Project Goal
 
-relate detected events to the power-system phase,
+Electrical arcing and sparking on power-system hardware can generate short-duration broadband RF noise.
 
-compare simulated signals with real SDR I/Q measurements, and
+Our goal is to develop a system that can:
 
-eventually help a user determine the direction or location of the noise source.
+- Detect signatures associated with power-line arcing and sparking
+- Distinguish those events from background RF noise
+- Relate detected events to the power-system phase
+- Compare simulated signals with real SDR I/Q measurements
+- Help determine the direction or location of the noise source
 
-The final hardware architecture is intentionally not fixed yet. Processor, antenna, SDR or receiver, embedded hardware, and PCB choices will be based on measured algorithm and processing requirements.
+The final hardware architecture is not fixed yet. Processor, antenna, SDR or receiver, embedded hardware, and PCB choices will be selected after the signal-processing and detection requirements are better understood.
 
-Current Modeling Approach
+---
 
-The MATLAB and Simulink work is being developed incrementally.
+## How the System Is Intended to Work
 
-v01: Basic 60 Hz Model
+```text
+Power-line defect
+       |
+       v
+Electrical arc or spark
+       |
+       v
+Broadband RF emission
+       |
+       v
+Antenna
+       |
+       v
+SDR / Receiver
+       |
+       v
+Signal Processing and Detection
+       |
+       v
+Spark Detected
+       |
+       v
+Direction / Location Assistance
+```
 
-Created a 60 Hz sine-wave model and verified the simulation setup and solver resolution.
+---
 
-v02: Grid Frequency to Phase to Voltage
+## Current MATLAB and Simulink Progress
 
-Replaced the direct sine source with a frequency-to-phase model:
+### v01: Basic 60 Hz Model
 
-grid frequency -> 2*pi -> integration -> phase -> sin(phase)
+Created a basic 60 Hz sine-wave model and verified the Simulink setup.
 
-A small temporary frequency variation was added to verify that the generated waveform follows a changing grid frequency instead of assuming an exact 60.000 Hz source.
+Main goals:
 
-v03: Phase-Controlled Disturbance
+- Confirm the power waveform
+- Verify approximately six cycles in a 0.1 second simulation
+- Improve waveform resolution by reducing the solver maximum step size
 
-Added a second source and gating logic to verify that a disturbance could be applied only during selected portions of the AC cycle.
+### v02: Grid Frequency to Phase to Voltage
 
-v04: Two Events on the Positive Half-Cycle
+Replaced the direct 60 Hz source with a frequency-to-phase model.
 
-Updated the logic based on sponsor feedback so that one event occurs on the rising segment and one on the falling segment of the positive half-cycle.
+```text
+Grid Frequency
+      |
+      v
+    2*pi
+      |
+      v
+ Integration
+      |
+      v
+    Phase
+      |
+      v
+  sin(phase)
+      |
+      v
+Power Waveform
+```
 
-v05: Adjustable Onset and Quench Windows
+A small temporary frequency variation was added to verify that the waveform can follow a changing grid frequency instead of assuming an exact 60.000 Hz source.
 
-Replaced the simple threshold method with explicit phase-angle windows. This makes the event timing adjustable without changing the model architecture.
+### v03: Controlled Disturbance
 
-v06: General Spark-Event Envelope
+Added a second source and gating logic.
 
-The current model uses two adjustable positive-half-cycle windows and a normalized disturbance amplitude.
+Purpose:
 
-Current starting windows, based on sponsor guidance:
+- Prove that a disturbance can be added only during selected portions of the AC waveform
+- Verify the basic switching and gating concept
 
-rising-side window: 40° to 50°, centered at 45°
+### v04: Two Events on the Positive Half-Cycle
 
-falling-side window: 130° to 140°, centered at 135°
+Updated the model based on sponsor feedback.
 
-The current +0.3 disturbance is a normalized test amplitude used to demonstrate the event envelope. It is not being claimed as the real physical spark voltage or current, or the final RF waveform.
+The disturbance was changed so that it occurs:
 
-What v06 Proves
+- Once on the rising portion of the positive half-cycle
+- Once on the falling portion of the positive half-cycle
+- Not on the negative half-cycle
+
+### v05: Adjustable Onset and Quench Windows
+
+Replaced the simple threshold method with explicit phase-angle windows.
+
+This allows the model to control:
+
+- Spark onset angle
+- Spark quench angle
+- Rising-side event location
+- Falling-side event location
+
+### v06: General Spark-Event Envelope
+
+The current model uses two adjustable phase windows and a normalized disturbance amplitude.
+
+Current starting windows based on sponsor guidance:
+
+- **Rising-side window: 40° to 50°**
+- **Center: 45°**
+- **Falling-side window: 130° to 140°**
+- **Center: 135°**
+
+The current disturbance amplitude is:
+
+```text
++0.3
+```
+
+This is a **normalized test value**. It is not being claimed as the real spark voltage, current, or RF amplitude.
+
+---
+
+## What v06 Currently Proves
 
 The current model demonstrates that we can:
 
-track the instantaneous grid phase,
+- Track grid phase
+- Synchronize spark-event timing to the grid waveform
+- Control onset and quench angles
+- Generate one event on the rising positive half-cycle
+- Generate one event on the falling positive half-cycle
+- Keep the negative half-cycle undisturbed
+- Change event timing without redesigning the model
 
-define adjustable onset and quench angles,
+---
 
-create one event on the rising positive half-cycle,
+## What v06 Does Not Prove Yet
 
-create one event on the falling positive half-cycle,
+v06 is **not yet the complete real-life RF spark waveform**.
 
-keep the negative half-cycle undisturbed, and
+A real electrical discharge creates a very fast electrical impulse that produces broadband RF energy.
 
-keep the event timing synchronized with the modeled grid phase.
+The current model mainly represents:
 
-What It Does Not Prove Yet
+```text
+WHEN the spark event occurs
++
+HOW LONG the event is active
+```
 
-The current model is not yet a complete physical RF spark model.
+It does not yet fully represent:
 
-A real electrical discharge produces a very fast impulsive current or voltage event with broadband RF content. The present Simulink model is primarily a timing and envelope model. The detailed spark and noise signature must be refined using reference material and real SDR measurements.
+```text
+WHAT the received real RF spark signature looks like
+```
 
-Next Steps
+That part will be refined using reference material and real SDR measurements.
 
-Keep the phase-window model as the controllable event generator.
+---
 
-Analyze sponsor and reference data to refine onset and quench angles.
+## Next Steps
 
-Analyze real SDR I/Q recordings and the reference spark model to characterize the received spark and noise signature.
+### 1. Refine the Spark Model
 
-Develop an initial detection algorithm using the controlled simulation.
+Use sponsor guidance, reference material, and measured data to improve:
 
-Validate the detector against real SDR data.
+- Onset angles
+- Quench angles
+- Spark pulse behavior
+- Received RF signature
 
-Measure processing requirements before selecting the final processor and hardware architecture.
+### 2. Analyze Real SDR Data
 
-Progress toward directional and source-location testing with suitable RF antennas and receiver hardware.
+Use the recorded complex I/Q data to study:
 
-Repository Structure
+- Time-domain behavior
+- Signal magnitude
+- Spectrum
+- Spectrogram
+- Background versus spark events
+- Repeating patterns related to the power-system phase
 
-01_Project_Documents/
-02_Modeling_and_Simulation/
-    PowerLine_Spark_Model/
-03_SDR_Data_Analysis/
-04_Detection_Algorithm/
-05_Hardware/
-06_Altium_PCB/
-07_Testing_and_Validation/
-08_Presentations_and_Reports/
+### 3. Develop the Detection Algorithm
 
-Team
+Use the controlled Simulink model first to test detection ideas.
 
-Team 2: Power Line Noise Detection #2
+Possible detection features include:
 
-Ali Hussein, Computer Engineering
+- Short impulsive events
+- Signal-energy increase
+- Broadband RF behavior
+- Repetition at expected grid-phase locations
 
-MATLAB and Simulink
+### 4. Validate With Real Measurements
 
-SDR and I/Q processing
+The detector must eventually be tested against real SDR recordings instead of simulation alone.
 
-detection algorithm
+### 5. Evaluate Hardware Requirements
 
-embedded and system integration
+After the algorithm is proven, evaluate whether the final system should use:
 
-Reagan Carlton, Electrical Engineering
+- Laptop
+- Raspberry Pi
+- MCU
+- FPGA
+- Other embedded hardware
 
-RF and antenna
+### 6. Develop Direction and Location Capability
 
-power-system noise physics
+The final system should help the user determine where the power-line noise source is located using suitable antenna and receiver hardware.
 
-references and measurement support
+---
 
-Abigail Purchla, Electrical Engineering
+## Repository Structure
 
-hardware
+```text
+Power-Line-Noise-Detection/
+|
+|-- 01_Project_Documents/
+|
+|-- 02_Modeling_and_Simulation/
+|   |
+|   `-- PowerLine_Spark_Model/
+|       |-- Team2_PowerLine_Model_v01
+|       |-- Team2_PowerLine_Model_v02
+|       |-- Team2_PowerLine_Model_v03
+|       |-- Team2_PowerLine_Model_v04
+|       |-- Team2_PowerLine_Model_v05
+|       `-- Team2_PowerLine_Model_v06
+|
+|-- 03_SDR_Data_Analysis/
+|
+|-- 04_Detection_Algorithm/
+|
+|-- 05_Hardware/
+|
+|-- 06_Altium_PCB/
+|
+|-- 07_Testing_and_Validation/
+|
+`-- 08_Presentations_and_Reports/
+```
 
-Altium and PCB
+---
 
-testing and validation
+## Team
 
-Sponsor: Dr. Tom Talley
-Course Instructor: Dr. John Lusher II
-Course: ECEN 403 Capstone, Texas A&M University
+### Ali Hussein
+**Computer Engineering**
 
-Tools
+Primary areas:
 
-MATLAB and Simulink
+- MATLAB and Simulink
+- SDR and I/Q processing
+- Detection algorithm
+- Embedded and system integration
 
-RTL-SDR and SDR#
+### Reagan Carlton
+**Electrical Engineering**
 
-Altium Designer
+Primary areas:
 
-Git and GitHub
+- RF and antenna work
+- Power-system noise physics
+- References
+- Measurement support
 
-Engineering Note
+### Abigail Purchla
+**Electrical Engineering**
 
-Values used during early simulation stages are intentionally treated as test parameters unless validated by reference data or measurement. The project separates simulated behavior, measured behavior, engineering assumptions, and sponsor or reference guidance so that later design decisions remain evidence-driven.
+Primary areas:
+
+- Hardware
+- Altium and PCB
+- Testing
+- Validation
+
+---
+
+## Project Leadership
+
+**Sponsor:** Dr. Tom Talley
+
+**Course Instructor:** Dr. John Lusher II
+
+**Course:** ECEN 403 Capstone
+
+**University:** Texas A&M University
+
+---
+
+## Main Tools
+
+- MATLAB
+- Simulink
+- RTL-SDR
+- SDR#
+- Altium Designer
+- Git
+- GitHub
+
+---
+
+## Engineering Note
+
+Early simulation values are treated as test parameters unless they are validated using sponsor guidance, references, or measured data.
+
+The project separates:
+
+- Simulation results
+- Measured results
+- Engineering assumptions
+- Sponsor guidance
+- Reference-supported values
+
+This keeps later hardware and algorithm decisions evidence-driven.
