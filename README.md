@@ -41,6 +41,51 @@ RF Front  SDR   Raspberry Pi / Controls
 End
 ```
 
+## Physical Prototype and Wiring
+
+The following diagram shows the current **conceptual physical connection plan** for the three subsystems.
+
+![Physical connection and wiring diagram](docs/images/portable_power_line_noise_detection_wiring_diagram.png)
+
+### Main signal path
+
+```text
+Antenna
+  -> RF coax / connector
+  -> RF front end
+  -> RF coax / connector
+  -> SDR RF input
+  -> USB I/Q data
+  -> Raspberry Pi 4
+  -> DSP / detection
+  -> display + LEDs + controls
+```
+
+### Ali subsystem connections
+
+- SDR connects to the Raspberry Pi 4 by USB. The USB connection carries I/Q data and normally supplies power to the SDR.
+- Raspberry Pi runs the DSP/detection software and handles the user interface.
+- Display connects to the Raspberry Pi using the interface required by the selected display, expected to be I2C or SPI.
+- Control buttons connect to Raspberry Pi GPIO inputs using an appropriate pull-up or pull-down configuration.
+- Proposed LED connection is `GPIO -> current-limiting resistor -> LED -> GND`.
+- Exact GPIO pin numbers will be finalized when the physical controls and display are selected.
+
+### Abigail subsystem connections
+
+- Antenna connects to the RF front end through the RF cable/connector selected for the final hardware.
+- RF front end provides the required filtering, protection, matching, and amplification if testing shows an LNA is needed.
+- RF front-end output connects to the SDR RF input through the RF signal path.
+- RF cabling should remain impedance-matched to the selected SDR/front-end hardware.
+
+### Reagan subsystem connections
+
+- Battery/power source feeds the voltage-regulation section.
+- Buck converter/regulators create the rails required by the Raspberry Pi, RF front end, display, and any other powered modules.
+- The power-distribution PCB provides the final power connections and common ground where required.
+- Each module's required voltage, current, connector, fuse/protection, and grounding arrangement must be verified before final wiring.
+
+> **Important:** This is a conceptual integration diagram. Exact antenna, RF-front-end components, SDR model, connector types, supply rails, GPIO pin numbers, LED resistor values, and display interface must be verified against the final selected hardware before assembly.
+
 ## Subsystems
 
 ### 1. Ali Hussein - SDR, Raspberry Pi 4, Controls/UI, DSP/Detection
@@ -128,7 +173,9 @@ Power-Line-Noise-Detection/
 |
 |-- 08_Presentations_and_Reports/
 |
-`-- 09_Sponsor_Reference_Files/
+|-- 09_Sponsor_Reference_Files/
+|
+`-- docs/images/
 ```
 
 ## Project Leadership
