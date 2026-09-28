@@ -1,0 +1,56 @@
+ALI - ECEN 403 SUBSYSTEM 3 STARTER
+Digital Signal Processing and Detection
+
+This starter uses Dr. Tom Talley's Power_Line_Noise_Student_Package as the source data.
+It does not replace or relabel the sponsor recordings.
+
+FIRST MILESTONE
+===============
+Validate the starter package and establish a baseline understanding of the four recordings before designing a detector.
+
+DO THESE IN ORDER
+=================
+1. Put these files in the SAME MATLAB folder as the four sponsor MAT files:
+   - replay_road_event.m
+   - analyze_received_event.m
+   - ali_stage1_baseline_compare.m
+
+2. In MATLAB, set that folder as Current Folder.
+
+3. Run:
+      replay_road_event
+   First select:
+      road_event_20260911_182619_107_UTC.mat   (indoor)
+   Then select:
+      road_event_20260911_184400_330_UTC.mat   (outdoor)
+   Then select:
+      road_event_20260911_191220_112_UTC.mat   (strong repeater/reference)
+   Finally select:
+      road_event_20260911_210016_757_UTC.mat   (GPS-enabled field recording)
+
+4. Run:
+      analyze_received_event
+   Start with the indoor file, then repeat for the outdoor file and repeater/reference file.
+
+5. Run:
+      ali_stage1_baseline_compare
+   This compares all four files and creates:
+      ali_stage1_baseline_results.csv
+
+WHAT WE ARE LOOKING FOR
+=======================
+- Indoor vs outdoor median and peak received levels
+- Impulsive events in time
+- Whether energy repeatedly appears at the same position in a nominal 60 Hz cycle
+- Whether patterns look more like 60 Hz or half-cycle (120 Hz) repetition
+- How the strong repeater/reference differs from environmental-noise recordings
+- Which metadata are present and whether samples were lost
+
+IMPORTANT
+=========
+Do not call any visible event a confirmed power-line spark from these recordings alone.
+The sponsor guide says the recordings are observational examples and source attribution requires controlled tests and supporting evidence.
+
+NEXT STAGE
+==========
+After this baseline is verified, build feature extraction and event detection on top of these same I/Q inputs.
